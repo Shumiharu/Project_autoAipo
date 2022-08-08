@@ -1,12 +1,9 @@
-// Aipoでログインするときの名前とパスワードを入れてね
-const userName = "haruki";
-const userPassword = "8280";
-
 // アップデートするようエラーが表示されたらchromedriver.exeファイルを削除し，chromedriverフォルダに再度chromeと同じバージョンのものをダウンロードしてこのフォルダに入れなおす
 const webdriver = require('selenium-webdriver');
 const { Builder, By, until } = webdriver;
 const date = require('date-utils');
-let fs = require('fs');
+const fs = require('fs');
+const os = require('os');
 let members = require('./members.json');
 const { time } = require('console');
 const XLSX = require('xlsx');
@@ -14,8 +11,6 @@ const { resolve } = require('path');
 const chrome = require('selenium-webdriver/chrome');
 const chromeOptions = new chrome.Options();
 chromeOptions.excludeSwitches("enable-logging");
-
-const os = require('os');
 
 const driver = new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).build();
 
@@ -65,7 +60,7 @@ let downloads = fs.readdirSync('/Users/'+ os.userInfo().username +'/Downloads', 
 });
 
 try {
-  // /Users/os.userInfo().username/Downloads内のtimecard.xlsのみ取得
+  // /Users/ユーザー名/Downloads内のtimecard.xlsのみ取得
   let timecardsXls = downloads.filter(function(files){
     return /timecard/.test(files);
   });
@@ -85,15 +80,22 @@ try {
 // aipoにアクセス
 driver.get('http://sv1.comm.nitech.ac.jp')
 .then(async function(){
-  // titleタグが完全に一致していないとだめ　10秒経っても見つからんかったらエラー
+  // 10秒経っても見つからんかったらエラー
   await driver.wait(until.titleIs("Aipo"), 10000);
 }).then(async function(){
-  let name = await driver.findElement({ id: 'member_username' });
-  let password = await driver.findElement({ id: 'password'});
+  // ユーザー名とパスワードを入力させるタイプ
+  // let userName = await readUserInput("ユーザー名: ");
+  // let userPassword = await readUserInput("パスワード: ");
+  // もとから設定しておくタイプ
+  let userName = "haruki";
+  let userPassword = "8280";
+
+  let inputName = await driver.findElement({ id: 'member_username' });
+  let inputPassword = await driver.findElement({ id: 'password'});
   let login = await driver.findElement({ name: 'login_submit'});
-  name.sendKeys(userName);
-  password.sendKeys(userPassword);
-  // 最上位にreturn持ってこないとだめ！
+  inputName.sendKeys(userName);
+  inputPassword.sendKeys(userPassword);
+
   return new Promise(function(resolve){
     setTimeout(function(){
       login.click();
@@ -106,16 +108,15 @@ driver.get('http://sv1.comm.nitech.ac.jp')
   // Aipo8からtimecard.xlsファイルをダウンロードし，ダウンロードフォルダからそれらを取得する
   console.log("Welcome to Aipo8! Now downloading...");
   return new Promise(async function(resolve, reject){
-    
     await isSameMonth.then(async function(result){
       let timer;
       if(result) {
-        timer = 6000;
+        timer = 4000;
         for(i=0; i<membersData.length; i++) {
           await driver.get('http://sv1.comm.nitech.ac.jp/portal/template/ExtTimecardXlsExportScreen/target_user_id/'+ membersData[i].id + '/view_month/' + year + '-' + month +'/f/timecard.xls');
         }
       } else {
-        timer = 9000;
+        timer = 6000;
         for(i=0; i<membersData.length; i++) {
           await driver.get('http://sv1.comm.nitech.ac.jp/portal/template/ExtTimecardXlsExportScreen/target_user_id/'+ membersData[i].id + '/view_month/' + year + '-' + (month - 1) +'/f/timecard.xls');
           await driver.get('http://sv1.comm.nitech.ac.jp/portal/template/ExtTimecardXlsExportScreen/target_user_id/'+ membersData[i].id + '/view_month/' + year + '-' + month +'/f/timecard.xls');
@@ -157,7 +158,7 @@ driver.get('http://sv1.comm.nitech.ac.jp')
      
       resolve(json);
     } else {
-      console.log("No timecard.xls file in this directory...");
+      console.log("Error: No timecards.xls file could be downloaded.");
       reject();
     }
   })
@@ -293,7 +294,21 @@ driver.get('http://sv1.comm.nitech.ac.jp')
 
   driver.close();
 }).catch(function(error){
-  console.log(error);
   driver.close();
 })
+
+// Aipoのユーザー名とパスワードを入力する（PCのユーザー名とは違うので注意）
+function readUserInput(question) {
+  const readline = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  return new Promise((resolve, reject) => {
+    readline.question(question, (answer) => {
+      resolve(answer);
+      readline.close();
+    });
+  });
+}
 
