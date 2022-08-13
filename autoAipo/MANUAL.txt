@@ -1,0 +1,44 @@
+/////////// Manual //////////
+
+// 必要なもの（これがないとgitコマンドやdockerコマンドがつかえません）
+github, docker
+
+参考URL: 
+https://www.curict.com/item/60/60bfe0e.html // git
+https://chigusa-web.com/blog/windows%E3%81%ABdocker%E3%82%92%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%97%E3%81%A6python%E7%92%B0%E5%A2%83%E3%82%92%E6%A7%8B%E7%AF%89/ // docker
+
+dockerについてはWSL2をインストールしないと使えない（docker desktopが使えず，settingでリロード状態のままフリーズする）
+
+// （備忘録的に）gitコマンド
+持っていきたいフォルダ/ディレクトリで
+git clone https://github.com/Shumiharu/Project_autoAipo.git
+か
+git clone git@github.com:Shumiharu/Project_autoAipo.git
+
+// 以下，実行に必要なコマンド
+持ってきたフォルダ/ディレクトリで
+
+docker image build -t shumiharu/chromedriver .
+-> イメージが構成される shumiharu/chromedriverは適当でok
+
+docker-compose up -d
+-> autoaipo_docker/autoAipoのコンテナが生成される
+
+docker exec -it autoAipo bash
+-> コンテナ内の仮想環境に入る
+
+node autoAipo.js
+-> autoAipo.jsを実行
+
+exit 
+-> 仮想環境から出る
+
+docker rm コンテナID
+-> コンテナ削除
+
+docker rmi イメージID
+-> イメージ削除
+
+
+参考URL:
+https://qiita.com/tifa2chan/items/e9aa408244687a63a0ae
