@@ -29,8 +29,6 @@ let month;
 let dayOfWeek = today.getDay();
 // (オプション)○週間前(先週分は1を入れる)
 let week = 1;
-// ゼミの曜日
-let zemi = "";
 
 // 先週の日付を配列形式で返す（月曜日から金曜日）
 let calculateLastWeek = new Promise(async function(resolve, reject) {
@@ -47,16 +45,6 @@ let calculateLastWeek = new Promise(async function(resolve, reject) {
     console.log(dates[i]);
   }
   console.log("です．\n");
-
-  // 前後期でゼミの曜日が異なるため
-  month = dates[4].split('/')[1];
-  if(month >= 4 && month <= 8) {
-    zemi = "Tue";
-  } else if(month >= 10 || month <= 2) {
-    zemi = "Wed";
-  }
-  console.log("また，ゼミは " + zemi + "day に行うことになっています．この曜日は退勤時刻で出席判定しています．\n")
-
   resolve(dates);
 })
 
@@ -318,7 +306,7 @@ driver.get('http://sv1.comm.nitech.ac.jp')
       // 月曜日から金曜日まで
       let attendance = 0;
       var newJsonData = jsonData.filter(function(json){
-        if(json.曜日 == zemi) {
+        if(json.曜日 == "Tue") {
           // 15:00以降に退勤していたら出席扱い
           let clockOut = json.退勤時間.split(':')[0];
           if(clockOut && clockOut >= 15) {
@@ -376,7 +364,7 @@ driver.get('http://sv1.comm.nitech.ac.jp')
   }
 
   // 以下，メールテンプレ
-  console.log("\n（メールテンプレート）\n\n岡本先生\n\nお世話になっております．先週の出席状況についてご報告させていただきます．\n\n先週のout: なし\n\nとなります．引き続きどうぞよろしくお願い致します．\n");
+  console.log("\n（メールテンプレート）\n\n岡本先生\n\nお世話になっております．先週の出席状況についてご報告させていただきます．\n\n先週のout:\n\nとなります．引き続きどうぞよろしくお願い致します．\n");
 
   driver.close();
 }).catch(function(error){
